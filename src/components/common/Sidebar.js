@@ -1,72 +1,3 @@
-// import React from 'react';
-// import { 
-//   Drawer, 
-//   List, 
-//   ListItem, 
-//   ListItemIcon, 
-//   ListItemText,
-//   Toolbar  // Add this import
-// } from '@mui/material';
-// import {
-//   Dashboard as DashboardIcon,
-//   Class as ClassIcon,
-//   Assignment as AssignmentIcon,
-//   Book as BookIcon,
-//   People as PeopleIcon,
-//   Person as PersonIcon
-// } from '@mui/icons-material';
-// import { Link } from 'react-router-dom';
-// import { useAuth } from '../../contexts/AuthContext';
-
-// const drawerWidth = 240;
-
-// function Sidebar() {
-//   const { user } = useAuth();
-
-//   const menuItems = [
-//     { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
-//     { text: 'Classrooms', icon: <ClassIcon />, path: '/classrooms' },
-//     { text: 'Exams', icon: <AssignmentIcon />, path: '/exams' },
-//     { text: 'Library', icon: <BookIcon />, path: '/library' },
-//   ];
-
-//   if (user?.role === 'student') {
-//     menuItems.push({ text: 'Counseling', icon: <PeopleIcon />, path: '/counseling' });
-//   }
-
-//   menuItems.push({ text: 'Profile', icon: <PersonIcon />, path: '/profile' });
-
-//   return (
-//     <Drawer
-//       variant="permanent"
-//       sx={{
-//         width: drawerWidth,
-//         flexShrink: 0,
-//         [`& .MuiDrawer-paper`]: { width: drawerWidth, boxSizing: 'border-box' },
-//       }}
-//     >
-//       <Toolbar />
-//       <List>
-//         {menuItems.map((item) => (
-//           <ListItem 
-//             button 
-//             key={item.text} 
-//             component={Link} 
-//             to={item.path}
-//           >
-//             <ListItemIcon>{item.icon}</ListItemIcon>
-//             <ListItemText primary={item.text} />
-//           </ListItem>
-//         ))}
-//       </List>
-//     </Drawer>
-//   );
-// }
-
-
-// export default Sidebar;
-
-
 import React from 'react';
 import PropTypes from 'prop-types'; // <--- import this
 import { 
@@ -94,7 +25,7 @@ import { useAuth } from '../../contexts/AuthContext';
 const drawerWidth = 240;
 const collapsedWidth = 80;
 
-function Sidebar({ isOpen, onToggle }) {
+function Sidebar({ isOpen, onToggle, isMobile }) {
   const { user } = useAuth();
   const location = useLocation();
 
@@ -112,15 +43,30 @@ function Sidebar({ isOpen, onToggle }) {
   menuItems.push({ text: 'Profile', icon: <PersonIcon />, path: '/profile' });
 
   return (
+    // <Drawer
+    //   variant="permanent"
+    //   sx={{
+    //     width: isOpen ? drawerWidth : collapsedWidth,
+    //     flexShrink: 0,
+    //     [`& .MuiDrawer-paper`]: { 
+    //       width: isOpen ? drawerWidth : collapsedWidth, 
+    //       boxSizing: 'border-box',
+    //       transition: 'width 0.3s ease',
+    //       overflowX: 'hidden',
+    //     },
+    //   }}
+    // >
     <Drawer
-      variant="permanent"
+      variant={isMobile ? 'temporary' : 'permanent'}
+      open={isMobile ? isOpen : true}
+      onClose={isMobile ? onToggle : undefined}
       sx={{
         width: isOpen ? drawerWidth : collapsedWidth,
         flexShrink: 0,
         [`& .MuiDrawer-paper`]: { 
           width: isOpen ? drawerWidth : collapsedWidth, 
           boxSizing: 'border-box',
-          transition: 'width 0.3s ease',
+          transition: isMobile ? 'none' : 'width 0.3s ease',
           overflowX: 'hidden',
         },
       }}
@@ -179,6 +125,7 @@ function Sidebar({ isOpen, onToggle }) {
 Sidebar.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   onToggle: PropTypes.func.isRequired,
+   isMobile: PropTypes.bool.isRequired, 
 };
 
 export default Sidebar;
