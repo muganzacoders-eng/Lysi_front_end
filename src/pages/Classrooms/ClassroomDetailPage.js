@@ -1,19 +1,3 @@
-// import React from 'react';
-// import { Box, Typography } from '@mui/material';
-// import { useParams } from 'react-router-dom';
-
-// function ClassroomDetailPage() {
-//   const { id } = useParams();
-  
-//   return (
-//     <Box>
-//       <Typography variant="h4">Classroom Details</Typography>
-//       <Typography>Details for classroom {id}</Typography>
-//     </Box>
-//   );
-// }
-
-// export default ClassroomDetailPage;
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types'; // Add this import
 import { 
@@ -43,6 +27,8 @@ import {
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import ApiService from '../../api';
+import GoogleMeetButton from '../../components/meet/GoogleMeetButton';
+
 
 // Add PropTypes validation for TabPanel component
 function TabPanel({ children, value, index, ...other }) {
@@ -84,28 +70,6 @@ function ClassroomDetailPage() {
     fetchClassroomData();
   }, [id]);
 
-  // const fetchClassroomData = async () => {
-  //   try {
-  //     setLoading(true);
-  //     setError('');
-      
-  //     // Use Promise.all to fetch all data concurrently
-  //     const [classroomData, studentsData, examsData] = await Promise.all([
-  //       ApiService.getClassroom(id),
-  //       ApiService.getClassroomStudents(id),
-  //       ApiService.getClassroomExams(id)
-  //     ]);
-      
-  //     setClassroom(classroomData);
-  //     setStudents(studentsData);
-  //     setExams(examsData);
-  //   } catch (err) {
-  //     console.error('Error fetching classroom data:', err);
-  //     setError('Failed to load classroom data. Please try again.');
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
 
   const fetchClassroomData = async () => {
   try {
@@ -204,6 +168,19 @@ function ClassroomDetailPage() {
                 </Typography>
               </Box>
             )}
+
+              {/* ✅ Google Meet Button for Teachers/Admins */}
+              {user && (user.role === 'teacher' || user.role === 'admin') && (
+  <GoogleMeetButton
+    type="classroom"
+    entityId={classroom.classroom_id}
+    entityName={classroom.title}
+    onMeetingCreated={(meetingUrl) => {
+      // Handle meeting creation (e.g., show notification)
+      console.log('Meeting created:', meetingUrl);
+    }}
+  />
+)}
           </Paper>
         </Grid>
 

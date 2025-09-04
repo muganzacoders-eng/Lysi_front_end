@@ -92,23 +92,26 @@ function RegisterPage() {
                 onChange={handleChange}
               />
             </Grid>
-            <Grid item xs={12}>
-              <TextField
-                select
-                fullWidth
-                name="role"
-                label="Role"
-                value={formData.role}
-                onChange={handleChange}
-                SelectProps={{
-                  native: true,
-                }}
-              >
-                <option value="student">Student</option>
-                <option value="teacher">Teacher</option>
-                <option value="expert">Expert</option>
-              </TextField>
-            </Grid>
+           <Grid item xs={12}>
+  <TextField
+    select
+    fullWidth
+    name="role"
+    label="Role"
+    value={formData.role}
+    onChange={handleChange}
+    SelectProps={{
+      native: true,
+    }}
+    required
+  >
+    <option value="student">Student</option>
+    <option value="teacher">Teacher</option>
+    <option value="expert">Expert</option>
+    <option value="parent">Parent</option>
+    <option value="admin">Admin</option>
+  </TextField>
+</Grid>
           </Grid>
           <Button
             type="submit"

@@ -35,3 +35,49 @@ a {
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
+
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .MuiContainer-root {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+  
+  .MuiCard-root {
+    margin: 8px 0;
+  }
+  
+  .MuiGrid-container {
+    margin: -8px;
+  }
+  
+  .MuiGrid-item {
+    padding: 8px;
+  }
+}
+
+/* Touch-friendly buttons */
+.MuiButton-root {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Better form handling on mobile */
+@media (max-width: 480px) {
+  .MuiTextField-root {
+    margin-bottom: 16px;
+  }
+  
+  .MuiDialog-paper {
+    margin: 16px;
+    width: calc(100% - 32px);
+  }
+}
+
+/* Prevent zoom on input focus on iOS */
+@media (max-width: 768px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}

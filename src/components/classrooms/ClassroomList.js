@@ -25,7 +25,7 @@ function ClassroomList({ classrooms }) {
                       {classroom.description}
                     </Typography>
                     <br />
-                    {classroom.schedule}
+                    {classroom.schedule?.days} at {classroom.schedule?.time}
                   </>
                 }
               />
@@ -38,17 +38,6 @@ function ClassroomList({ classrooms }) {
   );
 }
 
-// ✅ Add propTypes
-// ClassroomList.propTypes = {
-//   classrooms: PropTypes.arrayOf(
-//     PropTypes.shape({
-//       id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-//       title: PropTypes.string.isRequired,
-//       description: PropTypes.string,
-//       schedule: PropTypes.string,
-//     })
-//   ).isRequired,
-// };
 
 ClassroomList.propTypes = {
   classrooms: PropTypes.arrayOf(

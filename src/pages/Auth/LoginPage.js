@@ -10,15 +10,9 @@ function LoginPage() {
   const [error, setError] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
+     // Add a role state
+  const [selectedRole, setSelectedRole] = useState('student');
 
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  //   setError('');
-  //   const result = await login(email, password);
-  //   if (!result.success) {
-  //     setError(result.message || 'Login failed');
-  //   }
-  // };
 
 const handleSubmit = async (e) => {
   e.preventDefault();
@@ -32,19 +26,25 @@ const handleSubmit = async (e) => {
 
    
 
-  const handleGoogleSuccess = async (credentialResponse) => {
-    try {
-      console.log("Google ID token:", credentialResponse.credential);
-      const result = await login(credentialResponse.credential, true);
-      if (result.success) {
-        navigate('/dashboard');
-      } else {
-        setError('Google authentication failed');
-      }
-    } catch (error) {
+// Update Google login handler
+const handleGoogleSuccess = async (credentialResponse) => {
+  try {
+    console.log("Google ID token:", credentialResponse.credential);
+    const result = await login({
+      // tokenId: credentialResponse.credential,
+      tokenId: { credential: credentialResponse.credential },
+      role: selectedRole // Pass the selected role
+    }, true);
+    if (result.success) {
+      navigate('/dashboard');
+    } else {
       setError('Google authentication failed');
     }
-  };
+  } catch (error) {
+    setError('Google authentication failed');
+  }
+  console.log(credentialResponse)
+};
 
   const handleGoogleFailure = () => {
     setError('Google authentication failed');
@@ -62,6 +62,22 @@ const handleSubmit = async (e) => {
           </Typography>
         )}
         <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
+          {/* <TextField
+  select
+  label="Role"
+  value={selectedRole}
+  onChange={(e) => setSelectedRole(e.target.value)}
+  fullWidth
+  margin="normal"
+  SelectProps={{ native: true }}
+>
+  <option value="student">Student</option>
+  <option value="teacher">Teacher</option>
+  <option value="expert">Expert</option>
+  <option value="parent">Parent</option>
+  <option value="admin">Admin</option>
+</TextField> */}
+
           <TextField
             margin="normal"
             required

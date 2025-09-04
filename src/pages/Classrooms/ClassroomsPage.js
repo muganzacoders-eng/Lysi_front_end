@@ -1,17 +1,3 @@
-// import React from 'react';
-// import { Box, Typography } from '@mui/material';
-
-// function ClassroomsPage() {
-//   return (
-//     <Box>
-//       <Typography variant="h4">Classrooms</Typography>
-//       <Typography>List of classrooms will appear here</Typography>
-//     </Box>
-//   );
-// }
-
-// export default ClassroomsPage;
-
 import React, { useState, useEffect } from 'react';
 import { 
   Box, 
@@ -55,27 +41,6 @@ function ClassroomsPage() {
     }
   };
 
-  // const handleJoinClassroom = async (classroomId) => {
-  //   try {
-  //     await ApiService.joinClassroom(classroomId);
-  //     fetchClassrooms(); // Refresh the list
-  //   } catch (err) {
-  //     console.error('Error joining classroom:', err);
-  //     setError('Failed to join classroom. Please try again.');
-  //   }
-  // };
-
-  // const handleLeaveClassroom = async (classroomId) => {
-  //   try {
-  //     await ApiService.leaveClassroom(classroomId);
-  //     fetchClassrooms(); // Refresh the list
-  //   } catch (err) {
-  //     console.error('Error leaving classroom:', err);
-  //     setError('Failed to leave classroom. Please try again.');
-  //   }
-  // };
-
-  // Update the handleJoinClassroom and handleLeaveClassroom functions
 const handleJoinClassroom = async (classroomId) => {
   try {
     setError('');

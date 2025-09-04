@@ -12,14 +12,6 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  
-  //   const logout = useCallback(() => {
-  //   localStorage.removeItem('token');
-  //   setToken(null);
-  //   setUser(null);
-  //   navigate('/login');
-  // }, [navigate]);
-
   const logout = useCallback(() => {
   // 1️⃣ Remove token and reset state
   localStorage.removeItem('token');
@@ -55,24 +47,53 @@ export function AuthProvider({ children }) {
     loadUser();
   }, [logout, token]);
 
-  const login = async (credentials, isGoogle = false) => {
-    try {
-      let response;
-      if (isGoogle) {
-        response = await apiGoogleAuth(credentials);
-      } else {
-        response = await apiLogin(credentials.email, credentials.password);
-      }
+  // const login = async (credentials, isGoogle = false) => {
+  //   try {
+  //     let response;
+  //     if (isGoogle) {
+  //       response = await apiGoogleAuth(credentials);
+  //     } else {
+  //       response = await apiLogin(credentials.email, credentials.password);
+  //     }
       
-      localStorage.setItem('token', response.token);
-      setToken(response.token);
-      setUser(response.user);
-      navigate('/dashboard');
-      return { success: true };
-    } catch (error) {
-      return { success: false, message: error.message };
+  //     localStorage.setItem('token', response.token);
+  //     setToken(response.token);
+  //     setUser(response.user);
+  //     navigate('/dashboard');
+  //     return { success: true };
+  //   } catch (error) {
+  //     return { success: false, message: error.message };
+  //   }
+  // };
+
+  // Enhance the login function to handle role-based redirects
+const login = async (credentials, isGoogle = false) => {
+  try {
+    let response;
+    if (isGoogle) {
+      response = await apiGoogleAuth(credentials);
+    } else {
+      response = await apiLogin(credentials.email, credentials.password);
     }
-  };
+    
+    localStorage.setItem('token', response.token);
+    setToken(response.token);
+    setUser(response.user);
+    
+    // Role-based redirect
+    let redirectPath = '/dashboard';
+    if (response.user.role === 'parent') {
+      redirectPath = '/parent';
+    } else if (response.user.role === 'admin') {
+      redirectPath = '/admin';
+    }
+    
+    navigate(redirectPath);
+    return { success: true };
+  } catch (error) {
+    return { success: false, message: error.message };
+  }
+};
 
   const register = async (userData) => {
     try {

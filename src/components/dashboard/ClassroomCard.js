@@ -13,7 +13,7 @@ function ClassroomCard({ classroom, onClick }) {
           {classroom.description}
         </Typography>
         <Typography variant="body2" sx={{ mt: 1 }}>
-          Schedule: {classroom.schedule}
+          Schedule: {classroom.schedule?.days} at {classroom.schedule?.time}
         </Typography>
       </CardContent>
       <CardActions>

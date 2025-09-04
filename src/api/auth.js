@@ -1,7 +1,6 @@
 import axios from 'axios';
 
-// const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
-const API_URL = process.env.REACT_APP_API_URL || ' https://educationapi-n33q.onrender.com';
+const API_URL = process.env.REACT_APP_API_URL || 'https://educationapi-n33q.onrender.com';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -29,8 +28,14 @@ export const getMe = async (token) => {
   return response.data;
 };
 
-export const googleAuth = async (tokenId) => {
-  const response = await api.post('/auth/google', { tokenId });
+// export const googleAuth = async (tokenId) => {
+//   const response = await api.post('/auth/google', { tokenId });
+//   return response.data;
+// };
+
+export const googleAuth = async (payload) => {
+  const response = await api.post('/auth/google', payload);
   return response.data;
 };
+
 

@@ -15,36 +15,7 @@ class ApiService {
     this.setupInterceptors();
   }
 
-  // setupInterceptors() {
-  //   // Request interceptor → attach token if available
-  //   this.api.interceptors.request.use(
-  //     (config) => {
-  //       const token = localStorage.getItem('token');
-  //       if (token) {
-  //         config.headers.Authorization = `Bearer ${token}`;
-  //       }
-  //       return config;
-  //     },
-  //     (error) => Promise.reject(error)
-  //   );
 
-  //   // Response interceptor → handle 401s
-  //   this.api.interceptors.response.use(
-  //     (response) => response,
-  //     (error) => {
-  //       if (error.response?.status === 401) {
-  //         localStorage.removeItem('token');
-  //         window.location.href = '/login';
-  //       }
-  //       return Promise.reject(error);
-  //     }
-  //   );
-
-  //   this.api.interceptors.request.use(debugApi.logRequest, debugApi.logError);
-  //   this.api.interceptors.response.use(debugApi.logResponse, debugApi.logError);
-  // }
-
-// Enhance setupInterceptors with better error handling
 setupInterceptors() {
   // Request interceptor
   this.api.interceptors.request.use(
@@ -61,29 +32,73 @@ setupInterceptors() {
     }
   );
 
-  // Response interceptor
-  this.api.interceptors.response.use(
+   this.api.interceptors.response.use(
     (response) => response,
     (error) => {
-      console.error('API Error:', error.response?.data || error.message);
+      const status = error.response?.status;
+      const message = error.response?.data?.error || error.message;
       
-      if (error.response?.status === 401) {
+      console.error('API Error:', {
+        status,
+        message,
+        url: error.config?.url,
+        method: error.config?.method
+      });
+      
+      // Handle specific error cases
+      if (status === 404) {
+        error.message = 'Requested resource not found';
+      } else if (status === 500) {
+        error.message = 'Server error. Please try again later.';
+      } else if (status === 401) {
         localStorage.removeItem('token');
         window.location.href = '/login';
-      }
-      
-      // Provide better error messages
-      if (error.response?.data?.error) {
-        error.message = error.response.data.error;
-      } else if (error.response?.status === 500) {
-        error.message = 'Server error. Please try again later.';
-      } else if (error.response?.status === 404) {
-        error.message = 'Resource not found.';
+      } else {
+        error.message = message || 'An unexpected error occurred';
       }
       
       return Promise.reject(error);
     }
   );
+
+  // Add this to the setupInterceptors method
+this.api.interceptors.response.use(
+  (response) => {
+    console.log('API Response:', {
+      status: response.status,
+      url: response.config.url,
+      data: response.data
+    });
+    return response;
+  },
+  (error) => {
+    const status = error.response?.status;
+    const message = error.response?.data?.error || error.message;
+    const url = error.config?.url;
+    
+    console.error('API Error:', {
+      status,
+      message,
+      url,
+      method: error.config?.method,
+      details: error.response?.data
+    });
+    
+    // Handle specific error cases
+    if (status === 404) {
+      error.message = 'Requested resource not found';
+    } else if (status === 500) {
+      error.message = 'Server error. Please try again later.';
+    } else if (status === 401) {
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+    } else {
+      error.message = message || 'An unexpected error occurred';
+    }
+    
+    return Promise.reject(error);
+  }
+);
 }
 
   /* ================= AUTH ================= */
@@ -114,43 +129,44 @@ setupInterceptors() {
   }
 
   /* ================= CLASSROOMS ================= */
+  // async getClassrooms() {
+  //   const response = await this.api.get('/classrooms');
+  //   return response.data;
+  // }
+
   async getClassrooms() {
-    const response = await this.api.get('/classrooms');
-    return response.data;
+  const response = await this.api.get('/classrooms');
+
+  // Ensure it always returns an array
+  if (response.data && Array.isArray(response.data.data)) {
+    return response.data.data;
   }
 
-  // async getClassroom(id) {
-  //   const response = await this.api.get(`/classrooms/${id}`);
-  //   return response.data;
-  // }
+  return []; // Fallback to an empty array
+}
 
-  /* ================= EXAMS ================= */
-  // async getExams() {
-  //   const response = await this.api.get('/exams');
-  //   return response.data;
-  // }
-
-  // async getExam(id) {
-  //   const response = await this.api.get(`/exams/${id}`);
-  //   return response.data;
-  // }
 
   /* ================= CONTENT ================= */
+  // async getRecommendedContent() {
+  //   const response = await this.api.get('/content/recommended');
+  //   return response.data;
+  // }
+
   async getRecommendedContent() {
-    const response = await this.api.get('/content/recommended');
-    return response.data;
+  const response = await this.api.get('/content/recommended');
+
+  if (response.data && Array.isArray(response.data.data)) {
+    return response.data.data;
   }
+
+  return [];
+}
+
 
   async getContent(id) {
     const response = await this.api.get(`/content/${id}`);
     return response.data;
   }
-
-  /* ================= COUNSELING ================= */
-  // async getCounselingSessions() {
-  //   const response = await this.api.get('/counseling');
-  //   return response.data;
-  // }
 
   async getCounselingSession(id) {
     const response = await this.api.get(`/counseling/${id}`);
@@ -179,52 +195,44 @@ setupInterceptors() {
     return response.data;
   }
 
-  // Add these methods to your ApiService class in src/api/index.js
-
-// async getClassroom(id) {
-//   const response = await this.api.get(`/classrooms/${id}`);
-//   return response.data;
-// }
-
-// async getClassroomStudents(classroomId) {
-//   const response = await this.api.get(`/classrooms/${classroomId}/students`);
-//   return response.data;
-// }
-
-// async getClassroomExams(classroomId) {
-//   const response = await this.api.get(`/classrooms/${classroomId}/exams`);
-//   return response.data;
-// }
-
-// async joinClassroom(classroomId) {
-//   const response = await this.api.post(`/classrooms/${classroomId}/join`);
-//   return response.data;
-// }
-
-// async leaveClassroom(classroomId) {
-//   const response = await this.api.post(`/classrooms/${classroomId}/leave`);
-//   return response.data;
-// }
-
-// Add these methods to your ApiService class
-
 async getExams() {
   const response = await this.api.get('/exams');
   return response.data;
 }
 
+// async getExam(id) {
+//   const response = await this.api.get(`/exams/${id}`);
+//   return response.data;
+// }
+
+// Add validation to API methods
+// async getExam(id) {
+//   if (!id  || isNaN(id)) {
+//     throw new Error('Exam ID is required');
+//   }
+//   const response = await this.api.get(`/exams/${id}`);
+//   return response.data;
+// }
+
+// In your API service (frontend/src/api/index.js)
 async getExam(id) {
-  const response = await this.api.get(`/exams/${id}`);
-  return response.data;
+  try {
+    if (!id || isNaN(id)) {
+      throw new Error('Invalid exam ID');
+    }
+    const response = await this.api.get(`/exams/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching exam:', error);
+    throw new Error('Failed to fetch exam data');
+  }
 }
 
 async getExamQuestions(examId) {
+  if (!examId) {
+    throw new Error('Exam ID is required');
+  }
   const response = await this.api.get(`/exams/${examId}/questions`);
-  return response.data;
-}
-
-async getExamAttempts(examId) {
-  const response = await this.api.get(`/exams/${examId}/attempts`);
   return response.data;
 }
 
@@ -243,23 +251,6 @@ async submitExam(examId, answers) {
     return response.data;
   }
 
-// Add these methods to your ApiService class
-
-// async getCounselingSessions() {
-//   const response = await this.api.get('/counseling');
-//   return response.data;
-// }
-
-// async getExperts() {
-//   const response = await this.api.get('/users?role=expert');
-//   return response.data;
-// }
-
-// async requestCounselingSession(sessionData) {
-//   const response = await this.api.post('/counseling', sessionData);
-//   return response.data;
-// }
-
 async confirmCounselingSession(sessionId) {
   const response = await this.api.post(`/counseling/${sessionId}/confirm`);
   return response.data;
@@ -275,19 +266,28 @@ async completeCounselingSession(sessionId) {
   return response.data;
 }
 
-// Add these methods to your ApiService class
-
-// async getLibraryContent() {
-//   const response = await this.api.get('/content');
-//   return response.data;
-// }
-
 async getContentCategories() {
   const response = await this.api.get('/content/categories');
   return response.data;
 }
 
-async uploadContent(contentData) {
+// async uploadContent(contentData) {
+//   const formData = new FormData();
+//   Object.keys(contentData).forEach(key => {
+//     if (contentData[key] !== null) {
+//       formData.append(key, contentData[key]);
+//     }
+//   });
+
+//   const response = await this.api.post('/content', formData, {
+//     headers: {
+//       'Content-Type': 'multipart/form-data',
+//     },
+//   });
+//   return response.data;
+// }
+
+async uploadContent(contentData, onUploadProgress = null) {
   const formData = new FormData();
   Object.keys(contentData).forEach(key => {
     if (contentData[key] !== null) {
@@ -295,18 +295,26 @@ async uploadContent(contentData) {
     }
   });
 
-  const response = await this.api.post('/content', formData, {
+  // Create config object with headers
+  const config = {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
-  });
+  };
+
+  // Add progress callback if provided
+  if (onUploadProgress) {
+    config.onUploadProgress = onUploadProgress;
+  }
+
+  const response = await this.api.post('/content', formData, config);
   return response.data;
 }
 
-async purchaseContent(contentId) {
-  const response = await this.api.post(`/content/${contentId}/purchase`);
-  return response.data;
-}
+// async purchaseContent(contentId) {
+//   const response = await this.api.post(`/content/${contentId}/purchase`);
+//   return response.data;
+// }
 
 async getContentById(contentId) {
   const response = await this.api.get(`/content/${contentId}`);
@@ -320,26 +328,6 @@ async getClassroom(id) {
   return response.data;
 }
 
-// async getClassroomStudents(classroomId) {
-//   try {
-//     const response = await this.api.get(`/classrooms/${classroomId}`);
-//     return response.data.Enrollments || [];
-//   } catch (error) {
-//     console.error('Error fetching classroom students:', error);
-//     return [];
-//   }
-// }
-
-// async getClassroomStudents(classroomId) {
-//   try {
-//     const response = await this.api.get(`/classrooms/${classroomId}`);
-//     return response.data.enrollments || [];  // lowercase
-//   } catch (error) {
-//     console.error('Error fetching classroom students:', error);
-//     return [];
-//   }
-// }
-
 
 async getClassroomExams(classroomId) {
   try {
@@ -352,17 +340,6 @@ async getClassroomExams(classroomId) {
   }
 }
 
-// async joinClassroom(classroomId) {
-//   const response = await this.api.post(`/classrooms/${classroomId}/join`);
-//   return response.data;
-// }
-
-// async leaveClassroom(classroomId) {
-//   const response = await this.api.post(`/classrooms/${classroomId}/leave`);
-//   return response.data;
-// }
-
-// Add these missing methods to fix the join classroom issue
 async joinClassroom(classroomId) {
   try {
     const response = await this.api.post(`/classrooms/${classroomId}/join`);
@@ -404,16 +381,27 @@ async getCounselingSessions() {
   }
 }
 
+// async getExperts() {
+//   try {
+//     const response = await this.api.get('/users?role=expert');
+//     return response.data;
+//   } catch (error) {
+//     console.error('Error fetching experts:', error);
+//     return [];
+//   }
+// }
+
 async getExperts() {
   try {
     const response = await this.api.get('/users?role=expert');
+    // Ensure we're getting the expected data structure
+    console.log("API Experts response:", response.data);
     return response.data;
   } catch (error) {
     console.error('Error fetching experts:', error);
     return [];
   }
 }
-
 async requestCounselingSession(sessionData) {
   const response = await this.api.post('/counseling', sessionData);
   return response.data;
@@ -427,6 +415,105 @@ async getLibraryContent() {
     console.error('Error fetching library content:', error);
     return [];
   }
+}
+
+async getExamQuestions(examId) {
+  try {
+    const response = await this.api.get(`/exams/${examId}/questions`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching exam questions:', error);
+    throw new Error('Failed to fetch exam questions');
+  }
+}
+
+async getExamAttempts(examId) {
+  try {
+    const response = await this.api.get(`/exams/${examId}/attempts`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching exam attempts:', error);
+    throw new Error('Failed to fetch exam attempts');
+  }
+}
+
+async getExamResults(examId) {
+  try {
+    const response = await this.api.get(`/exams/${examId}/results`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching exam results:', error);
+    throw new Error('Failed to fetch exam results');
+  }
+}
+
+
+
+async createClassroomMeeting(meetingData) {
+  const response = await this.api.post('/meetings/classrooms/meetings', meetingData);
+  return response.data;
+}
+
+async generateInstantClassroomMeeting(classroomId) {
+  const response = await this.api.get(`/meetings/classrooms/${classroomId}/instant-meeting`);
+  return response.data;
+}
+
+async createCounselingMeeting(meetingData) {
+  const response = await this.api.post('/counseling/meetings', meetingData);
+  return response.data;
+}
+
+async generateInstantCounselingMeeting() {
+  const response = await this.api.post('/meetings/counseling/generate-instant-meeting');
+  return response.data;
+}
+
+async confirmCounselingSessionWithMeet(sessionId, meetingData) {
+  const response = await this.api.post(`/counseling/${sessionId}/confirm-with-meet`, meetingData);
+  return response.data;
+}
+
+
+async purchaseContent(contentId) {
+  const response = await this.api.post(`/content/${contentId}/purchase`);
+  return response.data;
+}
+
+async trackContentDownload(contentId) {
+  const response = await this.api.post(`/content/${contentId}/download`);
+  return response.data;
+}
+
+// Add these methods to the ApiService class
+async getParentChildren() {
+  const response = await this.api.get('/parent/children');
+  return response.data;
+}
+
+async getChildrenProgress() {
+  const response = await this.api.get('/parent/progress');
+  return response.data;
+}
+
+async getAllUsers() {
+  const response = await this.api.get('/admin/users');
+  return response.data;
+}
+
+async getAdminStats() {
+  const response = await this.api.get('/admin/stats');
+  return response.data;
+}
+
+async updateUser(userId, userData) {
+  const response = await this.api.put(`/admin/users/${userId}`, userData);
+  return response.data;
+}
+
+async verifyUser(userId) {
+  const response = await this.api.post(`/admin/users/${userId}/verify`);
+  return response.data;
 }
 
 }

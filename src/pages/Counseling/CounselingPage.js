@@ -1,17 +1,3 @@
-// import React from 'react';
-// import { Box, Typography } from '@mui/material';
-
-// function CounselingPage() {
-//   return (
-//     <Box>
-//       <Typography variant="h4">Counseling</Typography>
-//       <Typography>Counseling sessions will appear here</Typography>
-//     </Box>
-//   );
-// }
-
-// export default CounselingPage;
-
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import {
@@ -54,6 +40,7 @@ import {
   CheckCircle as CheckCircleIcon,
   Cancel as CancelIcon
 } from '@mui/icons-material';
+import GoogleMeetButton from '../../components/meet/GoogleMeetButton';
 
 function TabPanel({ children, value, index, ...other }) {
   return (
@@ -80,7 +67,7 @@ TabPanel.defaultProps = {
 };
 
 // Add PropTypes for SessionList component
-function SessionList({ sessions, user, onSessionAction, canTakeAction }) {
+function SessionList({ sessions, user, onSessionAction, canTakeAction, onConfirmWithMeet }) {
   if (sessions.length === 0) {
     return (
       <Box sx={{ p: 3, textAlign: 'center' }}>
@@ -161,6 +148,14 @@ function SessionList({ sessions, user, onSessionAction, canTakeAction }) {
             <Box sx={{ display: 'flex', gap: 1 }}>
               {user?.role === 'expert' && session.status === 'requested' && (
                 <>
+                  <GoogleMeetButton
+                    type="counseling"
+                    entityId={session.session_id}
+                    entityName={`Session with ${session.Student?.first_name}`}
+                    onMeetingCreated={(meetingUrl) => {
+                      onConfirmWithMeet(session.session_id, meetingUrl);
+                    }}
+                  />
                   <Button
                     variant="contained"
                     color="success"
@@ -235,6 +230,7 @@ SessionList.propTypes = {
     user_id: PropTypes.number,
   }).isRequired,
   onSessionAction: PropTypes.func.isRequired,
+  onConfirmWithMeet: PropTypes.func.isRequired,
   canTakeAction: PropTypes.func.isRequired,
 };
 
@@ -251,6 +247,7 @@ function CounselingPage() {
   const [openDialog, setOpenDialog] = useState(false);
   const [tabValue, setTabValue] = useState(0);
   const { user } = useAuth();
+  //const [expertsLoading, setExpertsLoading] = useState(true);
 
   const [formData, setFormData] = useState({
     expert_id: '',
@@ -266,12 +263,17 @@ function CounselingPage() {
   const fetchData = async () => {
     try {
       setLoading(true);
+    // setExpertsLoading(true);
       setError('');
       
       const [sessionsData, expertsData] = await Promise.all([
         ApiService.getCounselingSessions(),
         ApiService.getExperts()
       ]);
+
+        // Add debugging
+    console.log("Experts data:", expertsData);
+    console.log("Sessions data:", sessionsData);
       
       setSessions(sessionsData);
       setExperts(expertsData);
@@ -323,10 +325,15 @@ function CounselingPage() {
     }
   };
 
-  const handleSessionAction = async (sessionId, action) => {
+  const handleSessionAction = async (sessionId, action, meetingLink = null) => {
     try {
       if (action === 'confirm') {
-        await ApiService.confirmCounselingSession(sessionId);
+        // If we have a meeting link, use the confirm with meet endpoint
+        if (meetingLink) {
+          await ApiService.confirmCounselingSessionWithMeet(sessionId, { meeting_link: meetingLink });
+        } else {
+          await ApiService.confirmCounselingSession(sessionId);
+        }
       } else if (action === 'cancel') {
         await ApiService.cancelCounselingSession(sessionId);
       } else if (action === 'complete') {
@@ -339,6 +346,11 @@ function CounselingPage() {
       console.error('Error updating session:', err);
       setError(`Failed to ${action} session. Please try again.`);
     }
+  };
+
+  // New function to handle confirmation with Google Meet
+  const handleConfirmWithMeet = async (sessionId, meetingUrl) => {
+    await handleSessionAction(sessionId, 'confirm', meetingUrl);
   };
 
   const canTakeAction = (session) => {
@@ -406,6 +418,7 @@ function CounselingPage() {
             sessions={filteredSessions}
             user={user}
             onSessionAction={handleSessionAction}
+            onConfirmWithMeet={handleConfirmWithMeet}
             canTakeAction={canTakeAction}
           />
         </TabPanel>
@@ -415,6 +428,7 @@ function CounselingPage() {
             sessions={filteredSessions}
             user={user}
             onSessionAction={handleSessionAction}
+            onConfirmWithMeet={handleConfirmWithMeet}
             canTakeAction={canTakeAction}
           />
         </TabPanel>
@@ -424,6 +438,7 @@ function CounselingPage() {
             sessions={filteredSessions}
             user={user}
             onSessionAction={handleSessionAction}
+            onConfirmWithMeet={handleConfirmWithMeet}
             canTakeAction={canTakeAction}
           />
         </TabPanel>
@@ -433,6 +448,7 @@ function CounselingPage() {
             sessions={filteredSessions}
             user={user}
             onSessionAction={handleSessionAction}
+            onConfirmWithMeet={handleConfirmWithMeet}
             canTakeAction={canTakeAction}
           />
         </TabPanel>
@@ -446,20 +462,46 @@ function CounselingPage() {
             <Grid container spacing={2} sx={{ mt: 1 }}>
               <Grid item xs={12}>
                 <FormControl fullWidth required>
-                  <InputLabel>Expert</InputLabel>
-                  <Select
-                    name="expert_id"
-                    value={formData.expert_id}
-                    label="Expert"
-                    onChange={handleInputChange}
-                  >
-                    {experts.map((expert) => (
-                      <MenuItem key={expert.user_id} value={expert.user_id}>
-                        {expert.first_name} {expert.last_name} - {expert.specialization}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+  <InputLabel>Expert</InputLabel>
+  <Select
+    name="expert_id"
+    value={formData.expert_id}
+    label="Expert"
+    onChange={handleInputChange}
+  >
+    {experts.length > 0 ? (
+      experts.map((expert) => (
+        <MenuItem key={expert.user_id} value={expert.user_id}>
+          {expert.first_name} {expert.last_name} - {expert.expertProfile?.specialization || 'General Counseling'}
+        </MenuItem>
+      ))
+    ) : (
+      <MenuItem disabled>No experts available</MenuItem>
+    )}
+  </Select>
+</FormControl>
+{/* <FormControl fullWidth required>
+  <InputLabel>Expert</InputLabel>
+  <Select
+    name="expert_id"
+    value={formData.expert_id}
+    label="Expert"
+    onChange={handleInputChange}
+    disabled={expertsLoading}
+  >
+    {expertsLoading ? (
+      <MenuItem disabled>Loading experts...</MenuItem>
+    ) : experts.length > 0 ? (
+      experts.map((expert) => (
+        <MenuItem key={expert.user_id} value={expert.user_id}>
+          {expert.first_name} {expert.last_name} - {expert.expertProfile?.specialization || 'General Counseling'}
+        </MenuItem>
+      ))
+    ) : (
+      <MenuItem disabled>No experts available</MenuItem>
+    )}
+  </Select>
+</FormControl> */}
               </Grid>
 
               <Grid item xs={12} sm={6}>

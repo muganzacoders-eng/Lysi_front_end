@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate, useLocation , useParams, useNavigate ,Route } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+
+
 
 export function ProtectedRoute({ children }) {
   const { isAuthenticated, loading } = useAuth();
@@ -33,5 +35,27 @@ export function PublicRoute({ children }) {
 }
 
 PublicRoute.propTypes = {
+  children: PropTypes.node.isRequired,
+};
+
+
+export function ExamRoute({ children }) {
+  const { id } = useParams();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!id || isNaN(id)) {
+      navigate('/exams', { replace: true });
+    }
+  }, [id, navigate]);
+
+  if (!id || isNaN(id)) {
+    return null; // or a loading spinner
+  }
+
+  return children;
+}
+
+ExamRoute.propTypes = {
   children: PropTypes.node.isRequired,
 };

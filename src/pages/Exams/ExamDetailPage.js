@@ -1,20 +1,3 @@
-// import React from 'react';
-// import { Box, Typography } from '@mui/material';
-// import { useParams } from 'react-router-dom';
-
-// function ExamDetailPage() {
-//   const { id } = useParams();
-  
-//   return (
-//     <Box>
-//       <Typography variant="h4">Exam Details</Typography>
-//       <Typography>Details for exam {id}</Typography>
-//     </Box>
-//   );
-// }
-
-// export default ExamDetailPage;
-
 
 import PropTypes from 'prop-types';
 import React, { useState, useEffect } from 'react';
@@ -81,11 +64,7 @@ function ExamDetailPage() {
   const [error, setError] = useState('');
   const [tabValue, setTabValue] = useState(0);
 
-  useEffect(() => {
-    fetchExamData();
-  }, [id]);
-
-  const fetchExamData = async () => {
+   const fetchExamData = async () => {
     try {
       setLoading(true);
       setError('');
@@ -106,6 +85,39 @@ function ExamDetailPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+  if (!id || isNaN(id)) {
+    setError('Invalid exam ID');
+    return;
+  }
+  fetchExamData();
+}, [id]);
+
+
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const examData = await ApiService.getExam(id);
+      setExam(examData);
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (id && !isNaN(id)) {
+    fetchData();
+  }
+}, [id]);
+
+
+if (loading) return <CircularProgress />;
+if (!exam) return <div>Exam not found</div>;
+
+ 
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
@@ -365,5 +377,6 @@ function ExamDetailPage() {
     </Box>
   );
 }
+
 
 export default ExamDetailPage;

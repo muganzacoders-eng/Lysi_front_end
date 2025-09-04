@@ -1,6 +1,5 @@
 import React from 'react';
-// import ReactDOM from 'react-dom';
-import { createRoot } from 'react-dom/client'; // Updated import
+import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { AuthProvider } from './contexts/AuthContext';
@@ -12,7 +11,7 @@ import reportWebVitals from './reportWebVitals';
 import './styles/global.css';
 
 const container = document.getElementById('root');
-const root = createRoot(container); // Create a root
+const root = createRoot(container);
 
 root.render(
   <React.StrictMode>
@@ -26,25 +25,7 @@ root.render(
         </ThemeProvider>
       </BrowserRouter>
     </GoogleOAuthProvider>
-  </React.StrictMode>,
-  document.getElementById('root')
+  </React.StrictMode>
 );
 
 reportWebVitals();
-
-
-
-//better change
-// import { createRoot } from 'react-dom/client';
-// import { GoogleOAuthProvider } from '@react-oauth/google';
-
-// const container = document.getElementById('root');
-// const root = createRoot(container);
-
-// root.render(
-//   <React.StrictMode>
-//     <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}>
-//       {/* Rest of your providers */}
-//     </GoogleOAuthProvider>
-//   </React.StrictMode>
-// );

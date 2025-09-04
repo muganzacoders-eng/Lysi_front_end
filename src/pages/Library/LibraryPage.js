@@ -26,7 +26,8 @@ import {
   Tab,
   IconButton,
   InputAdornment,
-  Pagination
+  Pagination,
+  LinearProgress // Added for upload progress
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -38,7 +39,8 @@ import {
   Apps as OtherIcon,
   PlayArrow as PlayIcon,
   Download as DownloadIcon,
-  Add as AddIcon
+  Add as AddIcon,
+  Close as CloseIcon // Added for closing dialog
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import ApiService from '../../api';
@@ -201,6 +203,10 @@ function LibraryPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 9;
 
+  // New state for upload loading
+  const [uploadLoading, setUploadLoading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+
   const { user } = useAuth();
 
   const [formData, setFormData] = useState({
@@ -218,53 +224,32 @@ function LibraryPage() {
     fetchData();
   }, []);
 
-  // const fetchData = async () => {
-  //   try {
-  //     setLoading(true);
-  //     setError('');
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      setError('');
       
-  //     const [contentData, categoriesData] = await Promise.all([
-  //       ApiService.getLibraryContent(),
-  //       ApiService.getContentCategories()
-  //     ]);
+      const [contentData, categoriesData] = await Promise.all([
+        ApiService.getLibraryContent(),
+        ApiService.getContentCategories()
+      ]);
       
-  //     setContent(contentData);
-  //     setCategories(categoriesData);
-  //   } catch (err) {
-  //     console.error('Error fetching library data:', err);
-  //     setError('Failed to load library content. Please try again.');
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
-  // Update the fetchData function
-const fetchData = async () => {
-  try {
-    setLoading(true);
-    setError('');
-    
-    const [contentData, categoriesData] = await Promise.all([
-      ApiService.getLibraryContent(),
-      ApiService.getContentCategories()
-    ]);
-    
-    // Ensure content has proper structure
-    const formattedContent = contentData.map(item => ({
-      ...item,
-      type: item.content_type || 'other',
-      category: item.categories?.[0]?.name || 'Uncategorized'
-    }));
-    
-    setContent(formattedContent);
-    setCategories(categoriesData);
-  } catch (err) {
-    console.error('Error fetching library data:', err);
-    setError('Failed to load library content. Please try again.');
-  } finally {
-    setLoading(false);
-  }
-};
+      // Ensure content has proper structure
+      const formattedContent = contentData.map(item => ({
+        ...item,
+        type: item.content_type || 'other',
+        category: item.categories?.[0]?.name || 'Uncategorized'
+      }));
+      
+      setContent(formattedContent);
+      setCategories(categoriesData);
+    } catch (err) {
+      console.error('Error fetching library data:', err);
+      setError('Failed to load library content. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
@@ -297,6 +282,9 @@ const fetchData = async () => {
   };
 
   const handleCloseDialog = () => {
+    // Don't allow closing dialog during upload
+    if (uploadLoading) return;
+    
     setOpenDialog(false);
     setFormData({
       title: '',
@@ -308,6 +296,7 @@ const fetchData = async () => {
       categories: [],
       duration: 0
     });
+    setUploadProgress(0);
   };
 
   const handleInputChange = (e) => {
@@ -333,15 +322,51 @@ const fetchData = async () => {
 
   const handleSubmitContent = async (e) => {
     e.preventDefault();
+    
+    // Basic validation
+    if (!formData.file) {
+      setError('Please select a file to upload');
+      return;
+    }
+    
     try {
-      await ApiService.uploadContent(formData);
+      setUploadLoading(true);
+      setUploadProgress(0);
+      
+      // Create a progress callback for the upload
+      const onUploadProgress = (progressEvent) => {
+        const percentCompleted = Math.round(
+          (progressEvent.loaded * 100) / progressEvent.total
+        );
+        setUploadProgress(percentCompleted);
+      };
+      
+      // Call the API service with progress callback
+      await ApiService.uploadContent(formData, onUploadProgress);
+      
       setSuccess('Content uploaded successfully!');
       setOpenDialog(false);
       fetchData(); // Refresh the content list
+      
+      // Reset form
+      setFormData({
+        title: '',
+        description: '',
+        content_type: '',
+        file: null,
+        is_paid: false,
+        price: 0,
+        categories: [],
+        duration: 0
+      });
+      setUploadProgress(0);
+      
       setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
       console.error('Error uploading content:', err);
       setError('Failed to upload content. Please try again.');
+    } finally {
+      setUploadLoading(false);
     }
   };
 
@@ -562,7 +587,33 @@ const fetchData = async () => {
 
       {/* Upload Content Dialog */}
       <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth>
-        <DialogTitle>Upload Educational Content</DialogTitle>
+        <DialogTitle>
+          Upload Educational Content
+          {uploadLoading && (
+            <IconButton
+              aria-label="close"
+              onClick={handleCloseDialog}
+              sx={{
+                position: 'absolute',
+                right: 8,
+                top: 8,
+                color: (theme) => theme.palette.grey[500],
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+          )}
+        </DialogTitle>
+        
+        {/* Upload Progress Bar */}
+        {uploadLoading && (
+          <LinearProgress 
+            variant="determinate" 
+            value={uploadProgress} 
+            sx={{ width: '100%' }}
+          />
+        )}
+        
         <form onSubmit={handleSubmitContent}>
           <DialogContent>
             <Grid container spacing={2} sx={{ mt: 1 }}>
@@ -574,6 +625,7 @@ const fetchData = async () => {
                   label="Title"
                   value={formData.title}
                   onChange={handleInputChange}
+                  disabled={uploadLoading}
                 />
               </Grid>
 
@@ -586,11 +638,38 @@ const fetchData = async () => {
                   label="Description"
                   value={formData.description}
                   onChange={handleInputChange}
+                  disabled={uploadLoading}
                 />
               </Grid>
 
+              {categories.length > 0 && (
+  <Grid item xs={12} sm={6}>
+    <FormControl fullWidth disabled={uploadLoading}>
+      <InputLabel>Category</InputLabel>
+      <Select
+        name="categories"
+        value={formData.categories || ''} // Single value
+        label="Category"
+        onChange={(e) =>
+          setFormData((prev) => ({
+            ...prev,
+            categories: e.target.value, // Store only one category ID
+          }))
+        }
+      >
+        {categories.map((category) => (
+          <MenuItem key={category.category_id} value={category.category_id}>
+            {category.name}
+          </MenuItem>
+        ))}
+      </Select>
+    </FormControl>
+  </Grid>
+)}
+
+
               <Grid item xs={12} sm={6}>
-                <FormControl fullWidth required>
+                <FormControl fullWidth required disabled={uploadLoading}>
                   <InputLabel>Content Type</InputLabel>
                   <Select
                     name="content_type"
@@ -614,15 +693,16 @@ const fetchData = async () => {
                   name="file"
                   onChange={handleInputChange}
                   InputLabelProps={{ shrink: true }}
+                  disabled={uploadLoading}
                 />
               </Grid>
 
               <Grid item xs={12} sm={6}>
-                <FormControl fullWidth>
+                <FormControl fullWidth disabled={uploadLoading}>
                   <InputLabel>Price Type</InputLabel>
                   <Select
                     name="is_paid"
-                    value={formData.is_paid}
+                    value={formData.is_paid ? 'paid' : 'free'}
                     label="Price Type"
                     onChange={(e) => setFormData(prev => ({
                       ...prev,
@@ -646,6 +726,7 @@ const fetchData = async () => {
                     value={formData.price}
                     onChange={handleInputChange}
                     inputProps={{ min: 0, step: 0.01 }}
+                    disabled={uploadLoading}
                   />
                 </Grid>
               )}
@@ -660,15 +741,23 @@ const fetchData = async () => {
                     value={formData.duration}
                     onChange={handleInputChange}
                     inputProps={{ min: 0 }}
+                    disabled={uploadLoading}
                   />
                 </Grid>
               )}
             </Grid>
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleCloseDialog}>Cancel</Button>
-            <Button type="submit" variant="contained">
-              Upload Content
+            <Button onClick={handleCloseDialog} disabled={uploadLoading}>
+              Cancel
+            </Button>
+            <Button 
+              type="submit" 
+              variant="contained" 
+              disabled={uploadLoading || !formData.file}
+              startIcon={uploadLoading ? <CircularProgress size={20} /> : null}
+            >
+              {uploadLoading ? `Uploading... ${uploadProgress}%` : 'Upload Content'}
             </Button>
           </DialogActions>
         </form>
