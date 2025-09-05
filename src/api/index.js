@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { debugApi } from '../utils/debug'; 
 
-const API_BASE_URL = 'https://educationapi-2.onrender.com';
+const API_BASE_URL = 'https://educationapi-2.onrender.com/api';
 
 class ApiService {
   constructor() {
@@ -463,3 +463,4 @@ async markOnboardingComplete() {
 const apiService = new ApiService();
 
 export default apiService;
+
