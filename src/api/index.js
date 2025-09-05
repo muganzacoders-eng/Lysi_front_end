@@ -61,7 +61,7 @@ setupInterceptors() {
     }
   );
 
-  // Add this to the setupInterceptors method
+
 this.api.interceptors.response.use(
   (response) => {
     console.log('API Response:', {
@@ -128,12 +128,6 @@ this.api.interceptors.response.use(
     return response.data;
   }
 
-  /* ================= CLASSROOMS ================= */
-  // async getClassrooms() {
-  //   const response = await this.api.get('/classrooms');
-  //   return response.data;
-  // }
-
   async getClassrooms() {
   const response = await this.api.get('/classrooms');
 
@@ -145,12 +139,6 @@ this.api.interceptors.response.use(
   return []; // Fallback to an empty array
 }
 
-
-  /* ================= CONTENT ================= */
-  // async getRecommendedContent() {
-  //   const response = await this.api.get('/content/recommended');
-  //   return response.data;
-  // }
 
   async getRecommendedContent() {
   const response = await this.api.get('/content/recommended');
@@ -200,21 +188,7 @@ async getExams() {
   return response.data;
 }
 
-// async getExam(id) {
-//   const response = await this.api.get(`/exams/${id}`);
-//   return response.data;
-// }
 
-// Add validation to API methods
-// async getExam(id) {
-//   if (!id  || isNaN(id)) {
-//     throw new Error('Exam ID is required');
-//   }
-//   const response = await this.api.get(`/exams/${id}`);
-//   return response.data;
-// }
-
-// In your API service (frontend/src/api/index.js)
 async getExam(id) {
   try {
     if (!id || isNaN(id)) {
@@ -271,22 +245,6 @@ async getContentCategories() {
   return response.data;
 }
 
-// async uploadContent(contentData) {
-//   const formData = new FormData();
-//   Object.keys(contentData).forEach(key => {
-//     if (contentData[key] !== null) {
-//       formData.append(key, contentData[key]);
-//     }
-//   });
-
-//   const response = await this.api.post('/content', formData, {
-//     headers: {
-//       'Content-Type': 'multipart/form-data',
-//     },
-//   });
-//   return response.data;
-// }
-
 async uploadContent(contentData, onUploadProgress = null) {
   const formData = new FormData();
   Object.keys(contentData).forEach(key => {
@@ -295,7 +253,7 @@ async uploadContent(contentData, onUploadProgress = null) {
     }
   });
 
-  // Create config object with headers
+
   const config = {
     headers: {
       'Content-Type': 'multipart/form-data',
@@ -311,17 +269,11 @@ async uploadContent(contentData, onUploadProgress = null) {
   return response.data;
 }
 
-// async purchaseContent(contentId) {
-//   const response = await this.api.post(`/content/${contentId}/purchase`);
-//   return response.data;
-// }
-
 async getContentById(contentId) {
   const response = await this.api.get(`/content/${contentId}`);
   return response.data;
 }
 
-// Add these methods to your ApiService class
 
 async getClassroom(id) {
   const response = await this.api.get(`/classrooms/${id}`);
@@ -332,7 +284,6 @@ async getClassroom(id) {
 async getClassroomExams(classroomId) {
   try {
     const response = await this.api.get(`/exams`);
-    // Filter exams by classroom ID on the client side since the endpoint might not exist
     return response.data.filter(exam => exam.classroom_id == classroomId);
   } catch (error) {
     console.error('Error fetching classroom exams:', error);
@@ -360,7 +311,6 @@ async leaveClassroom(classroomId) {
   }
 }
 
-// Fix getClassroomStudents method
 async getClassroomStudents(classroomId) {
   try {
     const response = await this.api.get(`/classrooms/${classroomId}/students`);
@@ -381,20 +331,9 @@ async getCounselingSessions() {
   }
 }
 
-// async getExperts() {
-//   try {
-//     const response = await this.api.get('/users?role=expert');
-//     return response.data;
-//   } catch (error) {
-//     console.error('Error fetching experts:', error);
-//     return [];
-//   }
-// }
-
 async getExperts() {
   try {
     const response = await this.api.get('/users?role=expert');
-    // Ensure we're getting the expected data structure
     console.log("API Experts response:", response.data);
     return response.data;
   } catch (error) {
@@ -417,15 +356,15 @@ async getLibraryContent() {
   }
 }
 
-async getExamQuestions(examId) {
-  try {
-    const response = await this.api.get(`/exams/${examId}/questions`);
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching exam questions:', error);
-    throw new Error('Failed to fetch exam questions');
-  }
-}
+// async getExamQuestions(examId) {
+//   try {
+//     const response = await this.api.get(`/exams/${examId}/questions`);
+//     return response.data;
+//   } catch (error) {
+//     console.error('Error fetching exam questions:', error);
+//     throw new Error('Failed to fetch exam questions');
+//   }
+// }
 
 async getExamAttempts(examId) {
   try {
@@ -446,8 +385,6 @@ async getExamResults(examId) {
     throw new Error('Failed to fetch exam results');
   }
 }
-
-
 
 async createClassroomMeeting(meetingData) {
   const response = await this.api.post('/meetings/classrooms/meetings', meetingData);
@@ -485,7 +422,6 @@ async trackContentDownload(contentId) {
   return response.data;
 }
 
-// Add these methods to the ApiService class
 async getParentChildren() {
   const response = await this.api.get('/parent/children');
   return response.data;
@@ -516,8 +452,13 @@ async verifyUser(userId) {
   return response.data;
 }
 
+
+async markOnboardingComplete() {
+  const response = await this.api.patch('/users/me/onboarding-complete');
+  return response.data;
 }
 
-// ✅ Assign instance to a variable before exporting (fixes ESLint warning)
+}
+
 const apiService = new ApiService();
 export default apiService;

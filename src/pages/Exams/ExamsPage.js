@@ -44,7 +44,7 @@ function ExamsPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-// Replace the fetchExams function with this:
+
 const fetchExams = useCallback(async () => {
   try {
     setLoading(true);

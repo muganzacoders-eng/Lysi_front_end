@@ -62,21 +62,6 @@ const handleGoogleSuccess = async (credentialResponse) => {
           </Typography>
         )}
         <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
-          {/* <TextField
-  select
-  label="Role"
-  value={selectedRole}
-  onChange={(e) => setSelectedRole(e.target.value)}
-  fullWidth
-  margin="normal"
-  SelectProps={{ native: true }}
->
-  <option value="student">Student</option>
-  <option value="teacher">Teacher</option>
-  <option value="expert">Expert</option>
-  <option value="parent">Parent</option>
-  <option value="admin">Admin</option>
-</TextField> */}
 
           <TextField
             margin="normal"

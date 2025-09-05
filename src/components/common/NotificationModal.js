@@ -20,7 +20,7 @@ const style = {
 function NotificationModal() {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
-  const [notifications, setNotifications] = useState([]); // Always initialize as array
+  const [notifications, setNotifications] = useState([]); 
   const [unreadCount, setUnreadCount] = useState(0);
   const [socket, setSocket] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -59,51 +59,6 @@ function NotificationModal() {
     return () => clearInterval(interval);
   }, []);
   
-
-  // const fetchNotifications = async () => {
-  //   try {
-  //     setLoading(true);
-  //     setError(null);
-  //     const response = await axios.get('/api/notifications');
-      
-  //     // Ensure we always work with an array
-  //     let notificationData = response.data;
-      
-  //     // Handle different response structures
-  //     if (notificationData && typeof notificationData === 'object') {
-  //       // If response has a data property that contains the array
-  //       if (notificationData.data && Array.isArray(notificationData.data)) {
-  //         notificationData = notificationData.data;
-  //       }
-  //       // If response has notifications property
-  //       else if (notificationData.notifications && Array.isArray(notificationData.notifications)) {
-  //         notificationData = notificationData.notifications;
-  //       }
-  //       // If response is not an array, wrap it in an array or use empty array
-  //       else if (!Array.isArray(notificationData)) {
-  //         notificationData = notificationData.length !== undefined ? [] : [notificationData];
-  //       }
-  //     } else {
-  //       // Fallback to empty array if response is not what we expect
-  //       notificationData = [];
-  //     }
-
-  //     setNotifications(notificationData);
-      
-  //     // Safely calculate unread count
-  //     const unreadNotifications = notificationData.filter(n => n && !n.is_read);
-  //     setUnreadCount(unreadNotifications.length);
-      
-  //   } catch (error) {
-  //     console.error('Error fetching notifications:', error);
-  //     setError('Failed to fetch notifications');
-  //     // Ensure notifications stays as an array even on error
-  //     setNotifications([]);
-  //     setUnreadCount(0);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
 const fetchNotifications = async () => {
   try {
     const response = await axios.get('/api/notifications');

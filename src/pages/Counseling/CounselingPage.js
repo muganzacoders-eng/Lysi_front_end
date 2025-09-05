@@ -203,7 +203,6 @@ function SessionList({ sessions, user, onSessionAction, canTakeAction, onConfirm
   );
 }
 
-// Add PropTypes validation for SessionList component
 SessionList.propTypes = {
   sessions: PropTypes.arrayOf(
     PropTypes.shape({
@@ -247,7 +246,7 @@ function CounselingPage() {
   const [openDialog, setOpenDialog] = useState(false);
   const [tabValue, setTabValue] = useState(0);
   const { user } = useAuth();
-  //const [expertsLoading, setExpertsLoading] = useState(true);
+
 
   const [formData, setFormData] = useState({
     expert_id: '',
@@ -263,7 +262,6 @@ function CounselingPage() {
   const fetchData = async () => {
     try {
       setLoading(true);
-    // setExpertsLoading(true);
       setError('');
       
       const [sessionsData, expertsData] = await Promise.all([
@@ -271,7 +269,6 @@ function CounselingPage() {
         ApiService.getExperts()
       ]);
 
-        // Add debugging
     console.log("Experts data:", expertsData);
     console.log("Sessions data:", sessionsData);
       
@@ -480,28 +477,6 @@ function CounselingPage() {
     )}
   </Select>
 </FormControl>
-{/* <FormControl fullWidth required>
-  <InputLabel>Expert</InputLabel>
-  <Select
-    name="expert_id"
-    value={formData.expert_id}
-    label="Expert"
-    onChange={handleInputChange}
-    disabled={expertsLoading}
-  >
-    {expertsLoading ? (
-      <MenuItem disabled>Loading experts...</MenuItem>
-    ) : experts.length > 0 ? (
-      experts.map((expert) => (
-        <MenuItem key={expert.user_id} value={expert.user_id}>
-          {expert.first_name} {expert.last_name} - {expert.expertProfile?.specialization || 'General Counseling'}
-        </MenuItem>
-      ))
-    ) : (
-      <MenuItem disabled>No experts available</MenuItem>
-    )}
-  </Select>
-</FormControl> */}
               </Grid>
 
               <Grid item xs={12} sm={6}>

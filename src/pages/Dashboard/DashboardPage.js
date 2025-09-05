@@ -94,17 +94,6 @@ console.log('Content API Response:', contentData);
             <Typography variant="h6" gutterBottom>
               Your Classrooms
             </Typography>
-            {/* {classrooms.length === 0 ? (
-              <Typography>No classrooms found</Typography>
-            ) : (
-              classrooms.map((classroom) => (
-                <ClassroomCard 
-                  key={classroom.classroom_id}
-                  classroom={classroom}
-                  onClick={() => navigate(`/classrooms/${classroom.classroom_id}`)}
-                />
-              ))
-            )} */}
             {Array.isArray(classrooms) && classrooms.length > 0 ? (
   classrooms.map((classroom) => (
     <ClassroomCard

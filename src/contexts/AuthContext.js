@@ -47,26 +47,6 @@ export function AuthProvider({ children }) {
     loadUser();
   }, [logout, token]);
 
-  // const login = async (credentials, isGoogle = false) => {
-  //   try {
-  //     let response;
-  //     if (isGoogle) {
-  //       response = await apiGoogleAuth(credentials);
-  //     } else {
-  //       response = await apiLogin(credentials.email, credentials.password);
-  //     }
-      
-  //     localStorage.setItem('token', response.token);
-  //     setToken(response.token);
-  //     setUser(response.user);
-  //     navigate('/dashboard');
-  //     return { success: true };
-  //   } catch (error) {
-  //     return { success: false, message: error.message };
-  //   }
-  // };
-
-  // Enhance the login function to handle role-based redirects
 const login = async (credentials, isGoogle = false) => {
   try {
     let response;
@@ -75,6 +55,11 @@ const login = async (credentials, isGoogle = false) => {
     } else {
       response = await apiLogin(credentials.email, credentials.password);
     }
+
+    setUser({ 
+      ...response.user,
+      hasCompletedOnboarding: response.user.has_completed_onboarding 
+    });
     
     localStorage.setItem('token', response.token);
     setToken(response.token);
@@ -108,6 +93,9 @@ const login = async (credentials, isGoogle = false) => {
     }
   };
 
+const updateUser = (updatedUserData) => {
+  setUser(prevUser => ({ ...prevUser, ...updatedUserData }));
+};
 
   const value = {
     user,
@@ -116,6 +104,7 @@ const login = async (credentials, isGoogle = false) => {
     login,
     register,
     logout,
+    updateUser,
     isAuthenticated: !!user,
   };
 
