@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { debugApi } from '../utils/debug'; 
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://educationapi-n33q.onrender.com';
+const API_BASE_URL = 'https://educationapi-2.onrender.com';
 
 class ApiService {
   constructor() {
@@ -461,4 +461,5 @@ async markOnboardingComplete() {
 }
 
 const apiService = new ApiService();
+
 export default apiService;
