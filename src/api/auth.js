@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'https://educationapi-2.onrender.com';
+const API_URL = 'https://educationapi-2.onrender.com/api';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -33,6 +33,7 @@ export const googleAuth = async (payload) => {
   const response = await api.post('/auth/google', payload);
   return response.data;
 };
+
 
 
 
